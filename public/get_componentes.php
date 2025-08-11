@@ -1,16 +1,16 @@
 <?php
-include 'conexion.php';
+require_once '../config/db.php';
 
-if (isset($_GET['proyecto_id'])) {
-    $id = intval($_GET['proyecto_id']);
+if (isset($_GET['programa_id'])) {
+    $id = intval($_GET['programa_id']);
 
-    $sql = "SELECT procesador, ram, almacenamiento, sistema_operativo 
-            FROM proyectos 
-            WHERE id = $id";
-    $result = $conn->query($sql);
+    $stmt = $conexion->prepare("SELECT procesador, ram, almacenamiento, sistema_operativo 
+                                 FROM programas 
+                                 WHERE id = ?");
+    $stmt->execute([$id]);
 
-    if ($result && $result->num_rows > 0) {
-        echo json_encode($result->fetch_assoc());
+    if ($stmt->rowCount() > 0) {
+        echo json_encode($stmt->fetch(PDO::FETCH_ASSOC));
     } else {
         echo json_encode([]);
     }

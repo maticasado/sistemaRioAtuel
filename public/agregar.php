@@ -4,7 +4,9 @@ require_once '../config/db.php';
 $programas = $conexion->query("SELECT * FROM programas")->fetchAll(PDO::FETCH_ASSOC);
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $stmt = $conexion->prepare("INSERT INTO inventario_notebooks (marca, fecha_revision, encargado, observaciones, posible_solucion, trabajo_hecho, programa_id) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt = $conexion->prepare("INSERT INTO inventario_notebooks 
+        (marca, fecha_revision, encargado, observaciones, posible_solucion, trabajo_hecho, programa_id, procesador, ram, almacenamiento, sistema_operativo) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     $stmt->execute([
         $_POST['marca'],
         $_POST['fecha_revision'],
@@ -12,7 +14,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $_POST['observaciones'],
         $_POST['posible_solucion'],
         $_POST['trabajo_hecho'],
-        $_POST['programa_id']
+        $_POST['programa_id'],
+        $_POST['procesador'],
+        $_POST['ram'],
+        $_POST['almacenamiento'],
+        $_POST['sistema_operativo']
     ]);
     header("Location: index.php");
     exit;
@@ -22,7 +28,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <title>Agregar notebook</title>
     <link rel="stylesheet" href="../css/estilo.css">
-    <script src="js/autocompletar.js" defer></script>
 </head>
 
 <h2>Agregar nueva notebook</h2>
@@ -36,34 +41,39 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     Programa/Proyecto:
     <select name="programa_id" id="programaSelect" required>
-        <script>
-document.querySelector('select[name="proyecto_id"]').addEventListener('change', function() {
-    var proyectoId = this.value;
-
-    if (proyectoId) {
-        fetch('get_componentes.php?proyecto_id=' + proyectoId)
-            .then(response => response.json())
-            .then(data => {
-                document.querySelector('input[name="procesador"]').value = data.procesador || '';
-                document.querySelector('input[name="ram"]').value = data.ram || '';
-                document.querySelector('input[name="almacenamiento"]').value = data.almacenamiento || '';
-                document.querySelector('input[name="sistema_operativo"]').value = data.sistema_operativo || '';
-            });
-    }
-});
-</script>
-
         <option value="">Seleccione...</option>
         <?php foreach ($programas as $p): ?>
             <option value="<?= $p['id'] ?>"><?= $p['nombre'] ?></option>
         <?php endforeach; ?>
     </select><br>
 
-    Procesador: <input type="text" id="procesador" readonly><br>
-    RAM: <input type="text" id="ram" readonly><br>
-    Almacenamiento: <input type="text" id="almacenamiento" readonly><br>
-    Sistema Operativo: <input type="text" id="so" readonly><br>
+    Procesador: <input type="text" name="procesador" id="procesador"><br>
+    RAM: <input type="text" name="ram" id="ram"><br>
+    Almacenamiento: <input type="text" name="almacenamiento" id="almacenamiento"><br>
+    Sistema Operativo: <input type="text" name="sistema_operativo" id="sistema_operativo"><br>
 
     <button type="submit">Guardar</button>
 </form>
 <a href="index.php">Volver</a>
+
+<script>
+document.getElementById('programaSelect').addEventListener('change', function() {
+    var programaId = this.value;
+
+    if (programaId) {
+        fetch('get_componentes.php?programa_id=' + programaId)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('procesador').value = data.procesador || '';
+                document.getElementById('ram').value = data.ram || '';
+                document.getElementById('almacenamiento').value = data.almacenamiento || '';
+                document.getElementById('sistema_operativo').value = data.sistema_operativo || '';
+            });
+    } else {
+        document.getElementById('procesador').value = '';
+        document.getElementById('ram').value = '';
+        document.getElementById('almacenamiento').value = '';
+        document.getElementById('sistema_operativo').value = '';
+    }
+});
+</script>
